@@ -108,8 +108,16 @@ func (s *Service) Deliver(ctx context.Context, id, org, actor, requestID string)
 		if n != 1 {
 			return domain.ErrConflict
 		}
-		if _, err := tx.ExecContext(ctx, `UPDATE supply_items SET reserved=reserved-?,quantity=quantity-? WHERE id=? AND reserved>=? AND quantity>=?`, qty, qty, item, qty, qty); err != nil {
+		res, err = tx.ExecContext(ctx, `UPDATE supply_items SET reserved=reserved-?,quantity=quantity-? WHERE id=? AND reserved>=? AND quantity>=?`, qty, qty, item, qty, qty)
+		if err != nil {
 			return err
+		}
+		updated, err := res.RowsAffected()
+		if err != nil {
+			return err
+		}
+		if updated != 1 {
+			return domain.ErrConflict
 		}
 		if s.Audit != nil {
 			if err := s.Audit.Record(ctx, tx, org, actor, "supply_movement", id, "deliver", "success", requestID, map[string]any{"shelter": shelter, "quantity": qty}); err != nil {
