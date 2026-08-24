@@ -131,8 +131,16 @@ func (s *Service) ReleaseExpired(ctx context.Context, now time.Time) (int, error
 			return err
 		}
 		for _, x := range items {
-			if _, err := tx.ExecContext(ctx, `UPDATE shelter_reservations SET status='expired' WHERE id=? AND status='active'`, x.id); err != nil {
+			res, err := tx.ExecContext(ctx, `UPDATE shelter_reservations SET status='expired' WHERE id=? AND status='active'`, x.id)
+			if err != nil {
 				return err
+			}
+			updated, err := res.RowsAffected()
+			if err != nil {
+				return err
+			}
+			if updated != 1 {
+				continue
 			}
 			if _, err := tx.ExecContext(ctx, `UPDATE shelters SET reserved=reserved-?,version=version+1 WHERE id=? AND reserved>=?`, x.people, x.shelter, x.people); err != nil {
 				return err
