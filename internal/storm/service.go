@@ -111,10 +111,7 @@ func (s *Service) AddZone(ctx context.Context, stormID, name, risk, org, actor, 
 		}
 		if s.Audit != nil {
 			if err := s.Audit.Record(ctx, tx, org, actor, "risk_zone", item.ID, "create", "success", requestID, item); err != nil {
-				if sqlite.IsConstraint(err) {
-					return nil
-				}
-				return nil
+				return err
 			}
 		}
 		return nil
