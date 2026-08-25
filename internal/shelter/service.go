@@ -94,10 +94,7 @@ func (s *Service) Reserve(ctx context.Context, shelterID, householdID string, pe
 		}
 		if s.Audit != nil {
 			if err := s.Audit.Record(ctx, tx, org, actor, "shelter", shelterID, "reserve", "success", requestID, item); err != nil {
-				if sqlite.IsConstraint(err) {
-					return nil
-				}
-				return nil
+				return err
 			}
 		}
 		if s.Outbox != nil {
