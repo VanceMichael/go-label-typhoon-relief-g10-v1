@@ -45,10 +45,7 @@ func (s *Service) EnqueueOrderAlert(ctx context.Context, stormID, orderID, org, 
 		}
 		if s.Audit != nil {
 			if err := s.Audit.Record(ctx, tx, org, actor, "evacuation_order", orderID, "alert.enqueue", "success", requestID, item); err != nil {
-				if sqlite.IsConstraint(err) {
-					return nil
-				}
-				return nil
+				return err
 			}
 		}
 		if s.Outbox != nil {
